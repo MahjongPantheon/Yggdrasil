@@ -1,0 +1,9 @@
+[submodule "Mimir"]
+	path = Mimir
+	url = git://github.com/MahjongPantheon/Mimir.git
+[submodule "Rheda"]
+	path = Rheda
+	url = git://github.com/MahjongPantheon/Rheda.git
+[submodule "Tyr"]
+	path = Tyr
+	url = git://github.com/MahjongPantheon/Tyr.git
