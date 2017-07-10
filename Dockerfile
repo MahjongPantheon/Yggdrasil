@@ -5,8 +5,11 @@ ENV PHP_MEMORY_LIMIT    512M
 ENV MAX_UPLOAD          50M
 ENV PHP_MAX_FILE_UPLOAD 200
 ENV PHP_MAX_POST        100M
-ENV LANG en_US.utf8
-ENV PGDATA /var/lib/postgresql/data
+ENV LANG                en_US.utf8
+ENV PGDATA              /var/lib/postgresql/data
+ENV POSTGRES_PASSWORD   pgpass
+ENV YARN_CACHE_FOLDER   /home/user/.yarn-cache
+ENV COMPOSER_CACHE_DIR  /home/user/.composer-cache
 
 RUN apk update && \
     apk upgrade && \
@@ -15,13 +18,17 @@ RUN apk update && \
     echo "${TIMEZONE}" > /etc/timezone && \
     apk add --update \
     curl \
+    make \
+    git \
     nginx \
     postgresql \
     nodejs \
+    nodejs-npm \
     php5-mcrypt \
     php5-soap \
     php5-openssl \
     php5-gmp \
+    php5-phar \
     php5-json \
     php5-pdo \
     php5-pdo_pgsql \
@@ -36,7 +43,9 @@ RUN apk update && \
 
 RUN mkdir /docker-entrypoint-initdb.d && \
     curl -o /usr/local/bin/gosu -sSL "https://github.com/tianon/gosu/releases/download/1.2/gosu-amd64" && \
-    chmod +x /usr/local/bin/gosu 
+    chmod +x /usr/local/bin/gosu
+
+RUN npm install -g yarn
     
     # Set environments
 RUN sed -i "s|;*daemonize\s*=\s*yes|daemonize = no|g" /etc/php5/php-fpm.conf && \
@@ -65,11 +74,19 @@ WORKDIR /www
 VOLUME ["/www"]
 
 # Expose ports
-EXPOSE 80 5432
+EXPOSE 4001 4002 4003 5432
 
 # copy entry point
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod 755 /entrypoint.sh
+
+# Folders init
+RUN mkdir -p /run/postgresql && chown postgres /run/postgresql
+RUN mkdir -p /run/nginx
+RUN mkdir -p /var/www/html/Tyr
+RUN mkdir -p /var/www/html/Mimir
+RUN mkdir -p /var/www/html/Rheda
+RUN ln -s /usr/bin/php5 /usr/bin/php
 
 # Entry point
 CMD ["/entrypoint.sh"]
