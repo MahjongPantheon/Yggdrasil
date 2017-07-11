@@ -11,6 +11,9 @@ ENV POSTGRES_PASSWORD   pgpass
 ENV YARN_CACHE_FOLDER   /home/user/.yarn-cache
 ENV COMPOSER_CACHE_DIR  /home/user/.composer-cache
 
+ENV RHEDA_OVERRIDE_API_URL      http://localhost:4001
+ENV TYR_OVERRIDE_API_URL        http://localhost:4001
+
 RUN apk update && \
     apk upgrade && \
     apk add --update tzdata && \
@@ -67,18 +70,16 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
     && ln -sf /dev/stderr /var/log/php7.1-fpm.log
 
-# Set Workdir
-WORKDIR /www
-
-# Expose volumes
-VOLUME ["/www"]
-
 # Expose ports
 EXPOSE 4001 4002 4003 5432
 
 # copy entry point
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod 755 /entrypoint.sh
+
+# copy nginx configs
+COPY rheda.nginx.conf /etc/nginx/conf.d/rheda.conf
+COPY mimir.nginx.conf /etc/nginx/conf.d/mimir.conf
 
 # Folders init
 RUN mkdir -p /run/postgresql && chown postgres /run/postgresql
