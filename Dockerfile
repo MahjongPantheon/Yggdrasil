@@ -13,6 +13,10 @@ ENV COMPOSER_CACHE_DIR  /home/user/.composer-cache
 
 ENV RHEDA_OVERRIDE_API_URL      http://localhost:4001
 ENV TYR_OVERRIDE_API_URL        http://localhost:4001
+# these should match auth data in dbinit.sql
+ENV PHINX_DB_NAME           mimir
+ENV PHINX_DB_USER           mimir
+ENV PHINX_DB_PASS           pgpass
 
 RUN apk update && \
     apk upgrade && \
@@ -44,8 +48,7 @@ RUN apk update && \
     php5-ctype \
     php5-fpm
 
-RUN mkdir /docker-entrypoint-initdb.d && \
-    curl -o /usr/local/bin/gosu -sSL "https://github.com/tianon/gosu/releases/download/1.2/gosu-amd64" && \
+RUN curl -o /usr/local/bin/gosu -sSL "https://github.com/tianon/gosu/releases/download/1.2/gosu-amd64" && \
     chmod +x /usr/local/bin/gosu
 
 RUN npm install -g yarn
@@ -80,6 +83,10 @@ RUN chmod 755 /entrypoint.sh
 # copy nginx configs
 COPY rheda.nginx.conf /etc/nginx/conf.d/rheda.conf
 COPY mimir.nginx.conf /etc/nginx/conf.d/mimir.conf
+
+# copy db init script
+RUN mkdir -p /docker-entrypoint-initdb.d
+COPY dbinit.sql /docker-entrypoint-initdb.d/dbinit.sql
 
 # Folders init
 RUN mkdir -p /run/postgresql && chown postgres /run/postgresql
