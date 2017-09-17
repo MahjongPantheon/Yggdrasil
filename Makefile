@@ -37,7 +37,7 @@ run:
 		echo "${GREEN}Starting container. Don't forget to run 'make stop' to stop it when you're done :)${NC}"; \
 		echo "----------------------------------------------------------------------------------"; \
 		echo "Hint: you may need to run this as root on some linux distros. Try it in case of any error."; \
-		echo "- ${YELLOW}PostgreSQL${NC} is exposed on port 5432 of local host"; \
+		echo "- ${YELLOW}PostgreSQL${NC} is exposed on port 5532 of local host"; \
 		echo "- ${YELLOW}Mimir API${NC} is exposed on port 4001"; \
 		echo "- ${YELLOW}Rheda${NC} is accessible on port 4002 (http://localhost:4002) and is set up to use local Mimir"; \
 		echo "- ${YELLOW}Tyr${NC} is accessible on port 4003 (http://localhost:4003) as angular dev server."; \
@@ -47,7 +47,7 @@ run:
 		echo "----------------------------------------------------------------------------------"; \
 		docker run \
 			-d -e LOCAL_USER_ID=$(UID) \
-			-p4001:4001 -p4002:4002 -p4003:4003 -p5432:5432 \
+			-p4001:4001 -p4002:4002 -p4003:4003 -p5532:5532 \
 			-v `pwd`/Tyr:/var/www/html/Tyr:z \
 			-v `pwd`/Mimir:/var/www/html/Mimir:z \
 			-v `pwd`/Rheda:/var/www/html/Rheda:z \

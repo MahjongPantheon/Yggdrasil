@@ -74,7 +74,7 @@ if [ -z "$(ls -A "$PGDATA")" ]; then
     gosu postgres pg_ctl -D "$PGDATA" -m fast -w stop
 
     { echo; echo "host all all 0.0.0.0/0 $authMethod"; } >> "$PGDATA"/pg_hba.conf
-    { echo; echo "port = 5432"; } >> "$PGDATA"/postgresql.conf
+    { echo; echo "port = 5532"; } >> "$PGDATA"/postgresql.conf
 fi
 
 # -----------------------------------------------------
