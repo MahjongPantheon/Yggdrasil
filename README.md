@@ -5,8 +5,8 @@
 1. `make container`
 2. `make run`
 3. Wait 30-60 sec while postgresql inside container is configuring
-4. Copy `mimir.conf.php` to the `Mimir/config/local/index.php`
-5. Copy `rheda.conf.php` to the `Rheda/config/local/index.php`
+4. `cp mimir.conf.php Mimir/config/local/index.php`
+5. `cp rheda.conf.php Rheda/config/local/index.php`
 7. `make dev` - it will install dependencies for all projects, run migrations 
 and will run angular dev server
 
