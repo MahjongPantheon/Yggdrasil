@@ -10,13 +10,17 @@ ENV PGDATA              /var/lib/postgresql/data
 ENV POSTGRES_PASSWORD   pgpass
 ENV YARN_CACHE_FOLDER   /home/user/.yarn-cache
 ENV COMPOSER_CACHE_DIR  /home/user/.composer-cache
+ENV DB_PORT             5532
 
-ENV RHEDA_OVERRIDE_API_URL      http://localhost:4001
-ENV TYR_OVERRIDE_API_URL        http://localhost:4001
+ENV MIMIR_URL http://localhost:4001
+ENV RHEDA_URL http://localhost:4002
+ENV TYR_URL   http://localhost:4003
+
 # these should match auth data in dbinit.sql
-ENV PHINX_DB_NAME           mimir
-ENV PHINX_DB_USER           mimir
-ENV PHINX_DB_PASS           pgpass
+ENV PHINX_DB_NAME mimir
+ENV PHINX_DB_USER mimir
+ENV PHINX_DB_PASS pgpass
+ENV PHINX_DB_PORT $DB_PORT
 
 RUN apk update && \
     apk upgrade && \
@@ -39,6 +43,7 @@ RUN apk update && \
     php5-json \
     php5-pdo \
     php5-pdo_pgsql \
+    php5-pgsql \
     php5-gd \
     php5-gettext \
     php5-xmlreader \
@@ -55,6 +60,7 @@ RUN npm install -g yarn
     
     # Set environments
 RUN sed -i "s|;*daemonize\s*=\s*yes|daemonize = no|g" /etc/php5/php-fpm.conf && \
+    sed -i "s|;*clear_env\s*=\s*no|clear_env = no|g" /etc/php5/php-fpm.conf && \
     sed -i "s|;*listen\s*=\s*127.0.0.1:9000|listen = 9000|g" /etc/php5/php-fpm.conf && \
     sed -i "s|;*listen\s*=\s*/||g" /etc/php5/php-fpm.conf && \
     sed -i "s|;*date.timezone =.*|date.timezone = ${TIMEZONE}|i" /etc/php5/php.ini && \
@@ -63,7 +69,7 @@ RUN sed -i "s|;*daemonize\s*=\s*yes|daemonize = no|g" /etc/php5/php-fpm.conf && 
     sed -i "s|;*max_file_uploads =.*|max_file_uploads = ${PHP_MAX_FILE_UPLOAD}|i" /etc/php5/php.ini && \
     sed -i "s|;*post_max_size =.*|post_max_size = ${PHP_MAX_POST}|i" /etc/php5/php.ini && \
     sed -i "s|;*cgi.fix_pathinfo=.*|cgi.fix_pathinfo= 0|i" /etc/php5/php.ini
-    
+
     # Cleaning up
 RUN mkdir /www && \
     apk del tzdata && \
@@ -74,7 +80,7 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/php7.1-fpm.log
 
 # Expose ports
-EXPOSE 4001 4002 4003 5432
+EXPOSE 4001 4002 4003 $DB_PORT
 
 # copy entry point
 COPY entrypoint.sh /entrypoint.sh

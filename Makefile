@@ -15,8 +15,8 @@ deps:
 		echo "${RED}Pantheon container is not running, can't make deps. Do 'make run' before.${NC}"; \
 	else \
 		docker exec $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Mimir && HOME=/home/user gosu user make deps'; \
-		docker exec $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Tyr && HOME=/home/user gosu user make deps'; \
 		docker exec $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Rheda && HOME=/home/user gosu user make deps'; \
+		docker exec $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Tyr && HOME=/home/user gosu user make deps'; \
 	fi
 
 .PHONY: container
@@ -37,7 +37,7 @@ run:
 		echo "${GREEN}Starting container. Don't forget to run 'make stop' to stop it when you're done :)${NC}"; \
 		echo "----------------------------------------------------------------------------------"; \
 		echo "Hint: you may need to run this as root on some linux distros. Try it in case of any error."; \
-		echo "- ${YELLOW}PostgreSQL${NC} is exposed on port 5432 of local host"; \
+		echo "- ${YELLOW}PostgreSQL${NC} is exposed on port 5532 of local host"; \
 		echo "- ${YELLOW}Mimir API${NC} is exposed on port 4001"; \
 		echo "- ${YELLOW}Rheda${NC} is accessible on port 4002 (http://localhost:4002) and is set up to use local Mimir"; \
 		echo "- ${YELLOW}Tyr${NC} is accessible on port 4003 (http://localhost:4003) as angular dev server."; \
@@ -47,7 +47,7 @@ run:
 		echo "----------------------------------------------------------------------------------"; \
 		docker run \
 			-d -e LOCAL_USER_ID=$(UID) \
-			-p4001:4001 -p4002:4002 -p4003:4003 -p5432:5432 \
+			-p4001:4001 -p4002:4002 -p4003:4003 -p5532:5532 \
 			-v `pwd`/Tyr:/var/www/html/Tyr:z \
 			-v `pwd`/Mimir:/var/www/html/Mimir:z \
 			-v `pwd`/Rheda:/var/www/html/Rheda:z \
@@ -65,12 +65,12 @@ stop:
 
 .PHONY: ngdev
 ngdev:
-	@docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Tyr && HOME=/home/user gosu user make dev'
+	@docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Tyr && HOME=/home/user gosu user make docker'
 
 .PHONY: dev
 dev: run
 	${MAKE} deps
-	@echo "${YELLOW}Database seeding & migrations should be done manually! Run 'make migrate' and 'make seed' to do it.${NC}"
+	${MAKE} migrate
 	${MAKE} ngdev
 
 .PHONY: migrate
@@ -78,7 +78,7 @@ migrate:
 	@if [ "$(RUNNING_DOCKER_ID)" = "" ]; then \
 		echo "${RED}Pantheon container is not running, can't run migrations.${NC}"; \
 	else \
-		docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Mimir && HOME=/home/user gosu user bin/phinx migrate -e staging'; \
+		docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Mimir && HOME=/home/user gosu user bin/phinx migrate -e docker'; \
 	fi
 
 .PHONY: seed
@@ -86,7 +86,7 @@ seed:
 	@if [ "$(RUNNING_DOCKER_ID)" = "" ]; then \
 		echo "${RED}Pantheon container is not running, can't run seeding.${NC}"; \
 	else \
-		docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Mimir && HOME=/home/user gosu user bin/phinx seed:run -e staging'; \
+		docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Mimir && HOME=/home/user gosu user bin/phinx seed:run -e docker'; \
 	fi
 
 .PHONY: logs
