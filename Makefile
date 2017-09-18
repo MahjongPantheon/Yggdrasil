@@ -15,8 +15,8 @@ deps:
 		echo "${RED}Pantheon container is not running, can't make deps. Do 'make run' before.${NC}"; \
 	else \
 		docker exec $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Mimir && HOME=/home/user gosu user make deps'; \
-		docker exec $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Tyr && HOME=/home/user gosu user make deps'; \
 		docker exec $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Rheda && HOME=/home/user gosu user make deps'; \
+		docker exec $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Tyr && HOME=/home/user gosu user make deps'; \
 	fi
 
 .PHONY: container
@@ -65,12 +65,12 @@ stop:
 
 .PHONY: ngdev
 ngdev:
-	@docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Tyr && HOME=/home/user gosu user make dev'
+	@docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Tyr && HOME=/home/user gosu user make docker'
 
 .PHONY: dev
 dev: run
 	${MAKE} deps
-	@echo "${YELLOW}Database seeding & migrations should be done manually! Run 'make migrate' and 'make seed' to do it.${NC}"
+	${MAKE} migrate
 	${MAKE} ngdev
 
 .PHONY: migrate
@@ -78,7 +78,7 @@ migrate:
 	@if [ "$(RUNNING_DOCKER_ID)" = "" ]; then \
 		echo "${RED}Pantheon container is not running, can't run migrations.${NC}"; \
 	else \
-		docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Mimir && HOME=/home/user gosu user bin/phinx migrate -e staging'; \
+		docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Mimir && HOME=/home/user gosu user bin/phinx migrate -e docker'; \
 	fi
 
 .PHONY: seed
@@ -86,7 +86,7 @@ seed:
 	@if [ "$(RUNNING_DOCKER_ID)" = "" ]; then \
 		echo "${RED}Pantheon container is not running, can't run seeding.${NC}"; \
 	else \
-		docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Mimir && HOME=/home/user gosu user bin/phinx seed:run -e staging'; \
+		docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Mimir && HOME=/home/user gosu user bin/phinx seed:run -e docker'; \
 	fi
 
 .PHONY: logs
