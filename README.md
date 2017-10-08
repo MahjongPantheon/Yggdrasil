@@ -1,30 +1,29 @@
-## Yggdrasil: docker files & configurations to make all pantheon work together
+## Yggdrasil: docker-based Pantheon development environment
 
-# How to run
+### Preparations
 
-Note: on some linux distos almost every docker-related command should be run as root.
+Yggdrasil works on *nix hosts (mac, linux, *bsd). Windows-based systems are not supported (while it still MAY work,
+it is not tested at all, also you may want to try using it under WSL in Windows 10+). 
 
-1. `make container`
-2. `make run`
-3. Wait 30-60 sec while postgresql inside container is configuring
-4. `cp mimir.conf.php Mimir/config/local/index.php`
-5. `cp rheda.conf.php Rheda/config/local/index.php`
-7. `make dev` - it will install dependencies for all projects, run migrations 
-and will run angular dev server
+Make sure you have Docker installed and daemon running on your system. Also Yggdrasil expects PHP5+ to be 
+installed on your host system for some minor needs.
 
-After that you can send command to create a new event:
-```
-curl -X POST \
-  http://localhost:4001/ \
-  -H 'content-type: application/json' \
-  -d '{
-   "jsonrpc": "2.0",
-   "method": "createEvent",
-   "params": ["Test offline", "description", "offline", "ema", 90, 1],
-   "id": "5db41fc6-5947-423c-a2ca-6e7f7e6a45c0"
-}'
-```
+Next you should clone Yggdrasil repo with all of its submodules:
+`git clone --recursive git@github.com:MahjongPantheon/Yggdrasil.git`
 
-And access event admin on http://localhost:4002/eid1/ with admin password: `password`
+Note that if you're external collaborator of Pantheon project, you will need to fork & clone each submodule repo,
+and then edit `.gitmodules` file to match your new repos. Pull requests should be sent for every affected submodule.  
 
-http://localhost:4003/ is angular app where you can enter pin code and set up a game.
+### Running containers
+
+Note: on some linux distros almost every docker-related command should be run as root.
+
+1. `make container` to build a pantheon container (this should be done every time Dockerfile is changed).
+2. `make run` to run the container and do all preparations inside of it (this should be done after each container shutdown).
+3. `make dev` to install dependencies for all projects, run database migrations and start all servers.
+
+To create new empty event, run `make empty_event` - and you will be able to access event with printed link. Admin
+password for every generated empty event is `password`.
+To create an event and fill it with some data, run `make seed` (with `sudo` if required).
+
+Tyr interface is available at http://localhost:4003/ - there you can enter pin code and set up a game. 
