@@ -2,6 +2,8 @@
 
 # How to run
 
+Note: on some linux distos almost every docker-related command should be run as root.
+
 1. `make container`
 2. `make run`
 3. Wait 30-60 sec while postgresql inside container is configuring

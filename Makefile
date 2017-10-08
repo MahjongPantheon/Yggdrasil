@@ -1,4 +1,3 @@
-RUNNING_DOCKER_ID := $(shell docker ps | grep pantheondev | awk '{print $$1}')
 UID := $(shell id -u $$SUDO_USER)
 UID ?= $(shell id -u $$USER)
 
@@ -8,8 +7,12 @@ GREEN = $(shell echo -e '\033[1;32m')
 YELLOW = $(shell echo -e '\033[1;33m')
 NC = $(shell echo -e '\033[0m') # No Color
 
+.PHONY: get_docker_id
+get_docker_id:
+	$(eval RUNNING_DOCKER_ID := $(shell docker ps | grep pantheondev | awk '{print $$1}'))
+
 .PHONY: deps
-deps:
+deps: get_docker_id
 	@echo "Hint: you may need to run this as root on some linux distros. Try it in case of any error."
 	@if [ "$(RUNNING_DOCKER_ID)" = "" ]; then \
 		echo "${RED}Pantheon container is not running, can't make deps. Do 'make run' before.${NC}"; \
@@ -20,7 +23,7 @@ deps:
 	fi
 
 .PHONY: container
-container:
+container: get_docker_id
 	@if [ "$(RUNNING_DOCKER_ID)" != "" ]; then \
 		echo "${RED}Pantheon container is up, you should stop it before rebuild.${NC}"; \
 	else \
@@ -29,7 +32,7 @@ container:
 	fi
 
 .PHONY: run
-run:
+run: get_docker_id
 	@if [ "$(RUNNING_DOCKER_ID)" != "" ]; then \
 		echo "${YELLOW}Pantheon containers have already been started.${NC}"; \
 	else \
@@ -55,7 +58,7 @@ run:
 	fi
 
 .PHONY: stop
-stop:
+stop: get_docker_id
 	@if [ "$(RUNNING_DOCKER_ID)" = "" ]; then \
 		echo "${RED}Pantheon container is not running, can't stop it.${NC}"; \
 	else \
@@ -64,7 +67,7 @@ stop:
 	fi
 
 .PHONY: ngdev
-ngdev:
+ngdev: get_docker_id
 	@docker exec -it $(RUNNING_DOCKER_ID) sh -c 'cd /var/www/html/Tyr && HOME=/home/user gosu user make docker'
 
 .PHONY: dev
@@ -74,7 +77,7 @@ dev: run
 	${MAKE} ngdev
 
 .PHONY: migrate
-migrate:
+migrate: get_docker_id
 	@if [ "$(RUNNING_DOCKER_ID)" = "" ]; then \
 		echo "${RED}Pantheon container is not running, can't run migrations.${NC}"; \
 	else \
@@ -82,7 +85,7 @@ migrate:
 	fi
 
 .PHONY: seed
-seed:
+seed: get_docker_id
 	@if [ "$(RUNNING_DOCKER_ID)" = "" ]; then \
 		echo "${RED}Pantheon container is not running, can't run seeding.${NC}"; \
 	else \
@@ -90,7 +93,7 @@ seed:
 	fi
 
 .PHONY: logs
-logs:
+logs: get_docker_id
 	@if [ "$(RUNNING_DOCKER_ID)" = "" ]; then \
 		echo "${RED}Pantheon container is not running, can't view logs.${NC}"; \
 	else \
@@ -98,10 +101,19 @@ logs:
 	fi
 
 .PHONY: shell
-shell:
+shell: get_docker_id
 	@if [ "$(RUNNING_DOCKER_ID)" = "" ]; then \
 		echo "${RED}Pantheon container is not running, can't get to shell.${NC}"; \
 	else \
 		docker exec -it $(RUNNING_DOCKER_ID) sh -c 'export PS1="|$(RED)Pantheon container$(NC) ~> $$PS1" && /bin/sh' ; \
 	fi
+
+# Some shortcuts for common tasks
+
+.PHONY: empty_event
+empty_event:
+		@curl -s http://localhost:4001/ \
+		-H 'content-type: application/json' \
+		-d '{"jsonrpc": "2.0", "method": "createEvent", "params": ["Test offline", "description", "offline", "ema", 90, 1], "id": "5db41fc6-5947-423c-a2ca-6e7f7e6a45c0" }' \
+		| php -r 'echo "New event: http://localhost:4002/eid" . json_decode(file_get_contents("php://stdin"))->result . PHP_EOL;'
 
