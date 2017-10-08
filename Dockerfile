@@ -18,6 +18,7 @@ ENV TYR_URL   http://localhost:4003
 
 # these should match auth data in dbinit.sql
 ENV PHINX_DB_NAME mimir
+ENV PHINX_DB_NAME_UNIT mimir_unit
 ENV PHINX_DB_USER mimir
 ENV PHINX_DB_PASS pgpass
 ENV PHINX_DB_PORT $DB_PORT

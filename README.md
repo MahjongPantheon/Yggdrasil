@@ -24,6 +24,7 @@ Note: on some linux distros almost every docker-related command should be run as
 
 To create new empty event, run `make empty_event` - and you will be able to access event with printed link. Admin
 password for every generated empty event is `password`.
-To create an event and fill it with some data, run `make seed` (with `sudo` if required).
+To create an event and fill it with some data, run `make seed` (with `sudo` if required). Note: this command will
+perform a full cleanup of data!
 
 Tyr interface is available at http://localhost:4003/ - there you can enter pin code and set up a game. 
